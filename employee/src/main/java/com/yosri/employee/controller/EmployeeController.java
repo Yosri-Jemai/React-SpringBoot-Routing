@@ -2,8 +2,13 @@ package com.yosri.employee.controller;
 
 import com.yosri.employee.entity.Employee;
 import com.yosri.employee.service.EmployeeService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -17,4 +22,40 @@ public class EmployeeController {
     public Employee postEmployee(@RequestBody Employee employee) {
         return employeeService.postEmployee(employee);
     }
+
+    @GetMapping("/Employees")
+    public List<Employee> getAllEmployees(){
+        return employeeService.getAllEmployees();
+    }
+
+    @DeleteMapping("/deleteEmployee/{id}")
+    public ResponseEntity<?> deleteEmployee(@PathVariable Long id) {
+        try {
+            employeeService.deleteEmployee(id);
+            return new ResponseEntity<>("Employee with ID "+id+" deleted successfully",HttpStatus.OK);
+        }catch (EntityNotFoundException e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/employee/{id}")
+    public ResponseEntity<?> getEmployee(@PathVariable Long id) {
+        Employee employee = employeeService.getEmployeeById(id);
+        if(employee == null){
+            return ResponseEntity.notFound().build();
+        }else {
+            return ResponseEntity.ok(employee);
+        }
+    }
+
+    @PatchMapping("/employee/{id}")
+    public ResponseEntity<?> updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
+        Employee updatedEmployee = employeeService.updateEmployee(id, employee);
+
+        if (updatedEmployee == null)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+        return ResponseEntity.ok(updatedEmployee);
+    }
+
 }
